@@ -1,34 +1,30 @@
 #include "Hasher.h"
+#include <array>
 #include <exception>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
 
-std::array<unsigned char, crypto_generichash_BYTES>* Hasher::hash(std::string &password){
-
-    std::array<unsigned char*, crypto_generichash_BYTES> salt;
-
-    std::fstream stream("/dev/urandom");
-    stream.read(reinterpret_cast<char*>(&salt), 32);
+Hash Hasher::hash(const std::string &password, const Salt &salt){
 
     if(sodium_init() < 0){
-        throw new std::runtime_error("failed to initialize sodium");
+        throw std::runtime_error("failed to initialize sodium");
     }
 
-    auto hash = new std::array<unsigned char, crypto_generichash_BYTES>;
+    Hash hash;
     
-    std::string saltString = reinterpret_cast<const char*>(salt.data());
+    std::string saltString(reinterpret_cast<const char*>(salt.data()), salt.size());
     std::string pwdSalt = password + saltString;
 
     if(crypto_generichash(
-            hash->data(), 
+            hash.data(), 
             crypto_generichash_BYTES, 
             reinterpret_cast<const unsigned char*>(pwdSalt.data()), 
-            password.size(), 
+            pwdSalt.size(), 
             NULL, 
             0) 
      != 0){
-        throw new std::runtime_error("failed to hash");
+        throw std::runtime_error("failed to hash");
     }
 
     return hash;
@@ -37,26 +33,44 @@ std::array<unsigned char, crypto_generichash_BYTES>* Hasher::hash(std::string &p
 void Hasher::test(){
     std::string pw = "test1";
     std::string pw2 = "differentPW";
+    
+    Salt salt1 = Hasher::genSalt();
+    Salt salt2 = Hasher::genSalt();
+    Salt salt3 = Hasher::genSalt();
 
-    Hash *pwHash = Hasher::hash(pw);
-    Hash *pwHash2 = Hasher::hash(pw);
-    Hash *pwHash3 = Hasher::hash(pw2);
+    Hash pwHash = Hasher::hash(pw, salt1);
+    Hash pwHash2 = Hasher::hash(pw, salt1);
+    Hash pwHash3 = Hasher::hash(pw2, salt2);
+   
+    try{
+        if(salt1 == salt2){
+            throw new std::runtime_error("separate generated salts are identical");
+        } else {
+            std::cout << "test1 passed" << std::endl;
+        }
 
-    if(*pwHash != *pwHash2){
-        throw new std::runtime_error("pw's dont match");
-    } else {
-        std::cout << "test1 passed" << std::endl;
+        if(pwHash != pwHash2){
+            throw new std::runtime_error("pw's dont match");
+        } else {
+            std::cout << "test2 passed" << std::endl;
+        }
+
+        if(pwHash == pwHash3){
+            throw new std::runtime_error("pw's match");
+        } else {
+            std::cout << "test3 passed" << std::endl;
+        }
+    } catch (std::runtime_error *e){
+        std::cout << e->what() << std::endl;
     }
-
-    if(*pwHash == *pwHash3){
-        throw new std::runtime_error("pw's match");
-    } else {
-        std::cout << "test1 passed" << std::endl;
-    }
-
 }
 
+Salt Hasher::genSalt(){
+    Salt salt;
 
+    randombytes_buf(salt.data(), salt.size());
 
+    return salt;
+}
 
 

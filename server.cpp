@@ -61,6 +61,15 @@ void Server::start(){
                 "Content-Length: " + std::to_string(body.size()) + "\r\n"
                 "Connection: close\r\n"
                 "\r\n" + body;
+
+            } else if (requestedData == "/style.css"){
+                std::string body = readFile("./front/style.css");
+                response =
+                    "HTTP/1.1 200 OK\r\n"
+                    "Content-Type: text/css\r\n"
+                    "Content-Length: " + std::to_string(body.size()) + "\r\n"
+                    "Connection: close\r\n"
+                    "\r\n" + body;                
             } else if (requestedData == "/app.js"){
                 std::string body = readFile("./front/dist/app.js");
                 response =

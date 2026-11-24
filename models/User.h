@@ -1,16 +1,19 @@
 #pragma once
 #include <string>
+#include "Hasher.h"
 
 class User{
     private:
         std::string username;
-        std::string hash;
-        std::string salt;
+        Hash hash;
+        Salt salt;
 
     public:
         User();
-        User(std::string username, std::string password);
+        User(std::string &username, std::string &password);
+        User(std::string &username, std::string &password, Salt &salt);
+        User(std::string &username, Hash &hash, Salt &salt);
         std::string getUserName(){return this->username;};
-        std::string getHash(){return this->hash;};
-        std::string getSalt(){return this->salt;};
+        Hash getHash(){return this->hash;};
+        Salt getSalt(){return this->salt;};
 };

@@ -1,7 +1,11 @@
 CXX      := g++
 CXXFLAGS := -std=c++17 -Wall -I/opt/homebrew/include -I.
 LDFLAGS  := -L/opt/homebrew/lib
-LDLIBS   := -lsodium
+LDLIBS   := -lsodium -lsqlite3
+
+debug: CXXFLAGS += -g -O0 -fsanitize=address,undefined -fno-omit-frame-pointer
+debug: LDFLAGS  += -fsanitize=address,undefined
+debug: server
 
 SRCS := $(shell find . -name '*.cpp')
 OBJS := $(SRCS:.cpp=.o)
