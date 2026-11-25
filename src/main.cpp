@@ -8,9 +8,9 @@ void runTests();
 
 int main(){
 
-    runTests();
-    //Server server = Server();
-    //server.start();
+    //runTests();
+    Server server = Server();
+    server.start();
 }
 
 void runTests(){
